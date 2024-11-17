@@ -1,0 +1,6 @@
+2024-11-16 21:21:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" already exists; SQL statement:
+CREATE TABLE PRODUCTS (productName text PRIMARY KEY, carbs int, protein int, fats int,category text) [42101-220]
+2024-11-16 21:27:26 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PRODUCTS" already exists; SQL statement:
+CREATE TABLE PRODUCTS (productName text PRIMARY KEY, carbs int, protein int, fats int,category text) [42101-220]

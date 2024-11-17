@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="CompanyManagement:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/CompanyManagement_jar</output-path>
+    <root id="archive" name="CompanyManagement.jar">
+      <element id="module-output" name="DietBuilder" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/h2database/h2/2.2.220/h2-2.2.220.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
