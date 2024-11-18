@@ -3,17 +3,16 @@ package org.MiddlEnd;
 import org.BackEnd.DatabaseConnection;
 import org.BackEnd.QueryOperations;
 import org.UI.ApplicationStart;
+import org.BackEnd.Controller;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
-        Connection connection;
 
         try {
-            connection = DatabaseConnection.GetConnection();
-            QueryOperations.CheckIfTablesExists(connection);
+            Controller.connection = DatabaseConnection.GetConnection();
+            QueryOperations.CheckIfTablesExists(Controller.connection);
             ApplicationStart.StartWindowApp();
             
         } catch (SQLException e) {
