@@ -156,7 +156,6 @@ public class QueryOperations {
 
     //meals
 
-
     public static void AddMealToBase(ArrayList<Ingredient> meal, Connection connection) throws SQLException {
         for (Ingredient ing : meal) {
             String addMeal = "INSERT INTO MEALS (mealID,productName,productWeight,mealCategory,productCalories) VALUES (?,?,?,?,?)";
@@ -254,8 +253,8 @@ public class QueryOperations {
                     mealCalories = 0;
 
                     // Add the meal header
-                    result.append("Meal Name: ").append(mealID).append("\n");
                     result.append("Category: ").append(mealCategory).append("\n");
+                    result.append("Meal Name: ").append(mealID).append("\n");
                 }
 
                 // Add the product details (name, weight, calories)
@@ -283,8 +282,7 @@ public class QueryOperations {
     }
 
 
-    public static void EditMeal(String mealID,String productName, int productWeight, Connection connection)
-    {
+    public static void EditMeal(String mealID,String productName, int productWeight, Connection connection) {
         try
         {
             String query = "UPDATE MEALS SET productName = ?, productWeight = ? WHERE mealID = ? AND productName = ?";
@@ -324,5 +322,35 @@ public class QueryOperations {
         PreparedStatement statement = connection.prepareStatement(deleteSQL);
         statement.setString(1, mealID);
         statement.executeUpdate();
+    }
+
+    public static HashMap<String, HashMap<String, Integer>> SummarizeIngredientsByProductCategory(Connection connection) throws SQLException {
+        HashMap<String, HashMap<String, Integer>> productCategoryMap = new HashMap<>();
+
+        // SQL Query: Retrieve products with their categories and weights
+        String query = "SELECT p.category, p.productName, SUM(m.productWeight) AS totalWeight "+
+       "FROM MEALS m INNER JOIN PRODUCTS p ON m.productName = p.productName GROUP BY p.category, p.productName";
+
+        PreparedStatement statement = connection.prepareStatement(query);
+        ResultSet rs = statement.executeQuery();
+
+        // Process each row to group by product category and sum weights
+        while (rs.next()) {
+            String productCategory = rs.getString("category");
+            String productName = rs.getString("productName");
+            int totalWeight = rs.getInt("totalWeight");
+
+            // Group by product category
+            productCategoryMap.putIfAbsent(productCategory, new HashMap<>());
+            HashMap<String, Integer> productMap = productCategoryMap.get(productCategory);
+
+            // Add product and weight to the category
+            productMap.put(productName, totalWeight);
+        }
+
+        rs.close();
+        statement.close();
+
+        return productCategoryMap;
     }
 }

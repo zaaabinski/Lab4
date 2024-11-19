@@ -13,6 +13,7 @@ import org.SubClasses.Product;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Controller {
@@ -172,6 +173,8 @@ public class Controller {
         // Make the specified pane visible
         ButtonsMenu.setVisible(true);
         paneToShow.setVisible(true);
+        Info.setText("");
+
     }
 
     // Action handlers (methods to handle button clicks)
@@ -426,5 +429,21 @@ public class Controller {
     }
 
 
+    public void GeneratePDFButton(ActionEvent actionEvent) {
+        GenerateIngredientsPDF(connection,"C:\\\\Users\\\\jakmi\\\\Desktop\\\\output.pdf");
+    }
 
+    public  void GenerateIngredientsPDF(Connection connection, String pdfFilePath) {
+        try {
+            // Summarize ingredients by category
+            HashMap<String, HashMap<String, Integer>> summary = QueryOperations.SummarizeIngredientsByProductCategory(connection);
+
+            // Generate the PDF using Aspose
+            PDFGenerator.GeneratePDF(summary, pdfFilePath);
+            Info.setText("PDF generated successfully at " + pdfFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error during PDF generation.");
+        }
+    }
 }
