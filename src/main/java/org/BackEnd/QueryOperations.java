@@ -5,6 +5,7 @@ import org.SubClasses.Product;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class QueryOperations {
 
@@ -44,7 +45,8 @@ public class QueryOperations {
                 "carbs int, " +
                 "protein int, " +
                 "fats int," +
-                "category text)";
+                "category text," +
+                "calories int)";
         statement.executeUpdate(TableProduct);
     }
 
@@ -54,35 +56,25 @@ public class QueryOperations {
                 "mealID text, " +
                 "productName text, " +
                 "productWeight int, " +
+                "productCalories int,"+
                 "mealCategory text, " +
                 "FOREIGN KEY (productName) REFERENCES PRODUCTS(productName) ON DELETE RESTRICT ON UPDATE CASCADE)";
 
         statement.executeUpdate(TableMeals);
     }
 
+    //products
     public static void AddProductToBase(String foodName, int carbs, int protein, int fats, String category, Connection currentConnection) throws SQLException {
-        String addProduct = "INSERT INTO PRODUCTS (productName,carbs,protein,fats,category)  VALUES (?,?,?,?,?)";
+        String addProduct = "INSERT INTO PRODUCTS (productName,carbs,protein,fats,category,calories)  VALUES (?,?,?,?,?,?)";
         PreparedStatement statement = currentConnection.prepareStatement(addProduct);
         statement.setString(1, foodName);
         statement.setInt(2, carbs);
         statement.setInt(3, protein);
         statement.setInt(4, fats);
         statement.setString(5, category);
+        statement.setInt(6,Product.CaluclateCalories(carbs,protein,fats));
         statement.executeUpdate();
     }
-
-    public static void AddMealToBase(ArrayList<Ingredient> meal, Connection currentConnection) throws SQLException {
-        for (Ingredient ing : meal) {
-            String addMeal = "INSERT INTO MEALS (mealID,productName,productWeight,mealCategory) VALUES (?,?,?,?)";
-            PreparedStatement statement = currentConnection.prepareStatement(addMeal);
-            statement.setString(1, ing.getMealId());
-            statement.setString(2, ing.getProductName());
-            statement.setInt(3, ing.getProductWeight());
-            statement.setString(4, ing.getMealCategory());
-            statement.executeUpdate();
-        }
-    }
-
 
     public static Product SearchForProductToEdit(String productName, Connection connection) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("SELECT * FROM PRODUCTS WHERE productName LIKE ?");
@@ -131,8 +123,7 @@ public class QueryOperations {
         }
     }
 
-    public static ArrayList<String>  ShowProductsTable(Connection connection)
-    {
+    public static ArrayList<String>  ShowProductsTable(Connection connection) {
         try {
             String query = "SELECT * FROM PRODUCTS";
 
@@ -146,10 +137,11 @@ public class QueryOperations {
                 int protein = rs.getInt("protein");
                 int fats = rs.getInt("fats");
                 String category = rs.getString("category");
+                int calories = rs.getInt("calories");
 
                 // Format the data as a string
                 String productInfo = "Product Name: " + productName + ", Carbs: " + carbs + ", Protein: " + protein +
-                        ", Fats: " + fats + ", Category: " + category;
+                        ", Fats: " + fats + ", Category: " + category + ", Calories : " +calories;
 
                 // Add the formatted string to the list
                 productData.add(productInfo);
@@ -162,6 +154,163 @@ public class QueryOperations {
         }
     }
 
+    //meals
+
+
+    public static void AddMealToBase(ArrayList<Ingredient> meal, Connection connection) throws SQLException {
+        for (Ingredient ing : meal) {
+            String addMeal = "INSERT INTO MEALS (mealID,productName,productWeight,mealCategory,productCalories) VALUES (?,?,?,?,?)";
+            PreparedStatement statement = connection.prepareStatement(addMeal);
+            statement.setString(1, ing.getMealId());
+            statement.setString(2, ing.getProductName());
+            statement.setInt(3, ing.getProductWeight());
+            statement.setString(4, ing.getMealCategory());
+
+            int caloriesHelp=GetCaloriesOfProduct(ing.getProductName(),connection);
+            double adjustedCalories = caloriesHelp*(ing.getProductWeight()/100.00);
+
+            statement.setInt(5, (int)adjustedCalories);
+            statement.executeUpdate();
+        }
+    }
+
+    private static int GetCaloriesOfProduct(String productName, Connection connection) {
+        try {
+            String getCalories = "SELECT calories FROM PRODUCTS WHERE productName = ?";
+            PreparedStatement statement = connection.prepareStatement(getCalories);
+            statement.setString(1, productName.trim());
+
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("calories");
+            } else {
+                System.out.println("No product found with the name: " + productName);
+                return 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException while fetching calories for product: " + productName);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ArrayList<Ingredient> SearchForMealToEdit(String mealToEditName,Connection connection) {
+        try {
+            ArrayList<Ingredient> editableMeal=new ArrayList<>();
+            PreparedStatement statement = connection.prepareStatement("SELECT *, count(*) OVER () AS ROWS FROM MEALS WHERE mealID LIKE ?");
+
+            statement.setString(1, "%" + mealToEditName + "%"); // Adding '%' for wildcard search
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                // Get data from each column
+                String mealID = rs.getString("mealID");
+                String productName = rs.getString("productName");
+                int productWeight = rs.getInt("productWeight");
+                String mealCategory = rs.getString("mealCategory");
+
+                // Create a new Ingredient object with the data
+                Ingredient ingredient = new Ingredient(mealID, productName, productWeight, mealCategory);
+
+                // Add the Ingredient object to the list
+                editableMeal.add(ingredient);
+            }
+
+            return editableMeal;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String ShowMealsTable(Connection connection) {
+        StringBuilder result = new StringBuilder();
+
+        try {
+            String query = "SELECT * FROM MEALS ORDER BY mealID";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet rs = statement.executeQuery();
+
+            int mealCalories = 0;
+            String currentMealID = "";
+            boolean isFirst = true;
+
+            while (rs.next()) {
+                String mealID = rs.getString("mealID");
+                String mealCategory = rs.getString("mealCategory");
+                String productName = rs.getString("productName");
+                int productWeight = rs.getInt("productWeight");
+                int productCalories = rs.getInt("productCalories");
+
+                // Check if it's a new meal (mealID changes)
+                if (!mealID.equals(currentMealID)) {
+                    if (!isFirst) {
+                        // Add the total calories for the previous meal before starting a new one
+                        result.append("Total Calories: ").append(mealCalories).append(" kcal\n\n");
+                    }
+                    isFirst = false;
+
+                    // Reset the total calories for the new meal
+                    mealCalories = 0;
+
+                    // Add the meal header
+                    result.append("Meal Name: ").append(mealID).append("\n");
+                    result.append("Category: ").append(mealCategory).append("\n");
+                }
+
+                // Add the product details (name, weight, calories)
+                result.append("- Product: ").append(productName)
+                        .append(", Weight: ").append(productWeight).append(" grams")
+                        .append(", Calories: ").append(productCalories).append(" kcal\n");
+
+                // Add the product's calories to the total meal calories
+                mealCalories += productCalories;
+
+                // Update the current meal ID
+                currentMealID = mealID;
+            }
+
+            // After the loop, add the total calories for the last meal
+            if (!isFirst) {
+                result.append("Total Calories: ").append(mealCalories).append(" kcal\n");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving meals from the database.", e);
+        }
+
+        return result.toString();
+    }
+
+
+    public static void EditMeal(String mealID,String productName, int productWeight, Connection connection)
+    {
+        try
+        {
+            String query = "UPDATE MEALS SET productName = ?, productWeight = ? WHERE mealID = ? AND productName = ?";
+
+            // Prepare the statement to prevent SQL injection
+            PreparedStatement statement = connection.prepareStatement(query);
+            String newProductName = productName;
+            // Set the parameters for the query
+            statement.setString(1, newProductName);
+            statement.setInt(2, productWeight);
+            statement.setString(3, mealID);
+            statement.setString(4, productName);
+
+            // Execute the update query
+            int rowsUpdated = statement.executeUpdate();
+
+            // Optional: Provide feedback on the number of rows affected
+            if (rowsUpdated > 0) {
+                System.out.println("Successfully updated " + rowsUpdated + " row(s) in the MEALS table.");
+            } else {
+                System.out.println("No rows matched the criteria for updating.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void DeleteMeal(String mealID, Connection connection) throws SQLException {
         String deleteSQL = "DELETE FROM MEALS WHERE mealID = ?";

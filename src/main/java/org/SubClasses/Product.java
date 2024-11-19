@@ -31,4 +31,14 @@ public class Product {
         return category;
     }
 
+    public static int CaluclateCalories(int carbs,int protein,int fats)
+    {
+         int carbsCalories=4;
+        int proteinCalories =4;
+        int fatsCalories=9;
+
+        return carbs*carbsCalories+proteinCalories*protein+fatsCalories*fats;
+
+    }
+
 }

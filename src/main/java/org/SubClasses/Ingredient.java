@@ -12,6 +12,7 @@ public class Ingredient {
         this.productName = productName;
         this.productWeight = productWeight;
         this.mealCategory = mealCategory;
+
     }
     public String getMealId() {
         return mealId;

@@ -72,7 +72,8 @@ public class Controller {
     private Pane DeleteMealPane;
     @FXML
     private Pane ShowProductPane;
-
+    @FXML
+    private Pane ShowMealBasePane;
 
     // TextFields
     @FXML
@@ -152,12 +153,14 @@ public class Controller {
     private TextField Info;
     @FXML
     private TextArea productBaseShowTextArea;
+    @FXML
+    private TextArea mealBaseShowTextArea;
     public static Connection connection;
 
     @FXML
     public void ShowPane(Pane paneToShow) {
         // List of all panes
-        Pane[] allPanes = {MainPane, ButtonsMenu, EditProductPane, AddProductPane, DeleteProductPane, ProductPane, MealPane, AddMealPane, EditMealPane, DeleteMealPane,ShowProductPane};
+        Pane[] allPanes = {MainPane, ButtonsMenu, EditProductPane, AddProductPane, DeleteProductPane, ProductPane, MealPane, AddMealPane, EditMealPane, DeleteMealPane,ShowProductPane,ShowMealBasePane};
 
         // Loop through all panes and make them invisible
         for (Pane pane : allPanes) {
@@ -219,6 +222,22 @@ public class Controller {
         }
     }
 
+    public void HandleShowMealBasePane(ActionEvent actionEvent) {
+        ShowPane(ShowMealBasePane); // Assuming ShowMealPane is the relevant pane
+        mealBaseShowTextArea.setText(""); // Clear the TextArea before displaying new data
+
+        try {
+            // Fetch the formatted meal data using the ShowMealsTable method
+            String mealData = QueryOperations.ShowMealsTable(connection);
+
+            // Set the retrieved meal data into the TextArea
+            mealBaseShowTextArea.setText(mealData);
+        } catch (Exception e) {
+            // Handle exceptions and provide user feedback
+            mealBaseShowTextArea.setText("An error occurred while fetching meal data. Please try again.");
+            e.printStackTrace();
+        }
+    }
 
     public void ShowAddMealP(ActionEvent actionEvent) {
         ShowPane(AddMealPane);
@@ -303,6 +322,7 @@ public class Controller {
         }
 
         try {
+            connection.setAutoCommit(false);
             QueryOperations.AddMealToBase(Meal, connection);
             for (TextField t : allNames) {
                 t.setText(null);
@@ -313,17 +333,88 @@ public class Controller {
             Info.setText("Added meal " + nameOfNewMeal.getText());
             nameOfNewMeal.setText(null);
             categoryOfNewMeal.setText(null);
+            connection.commit();
 
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+                Info.setText("Something went wrong. No records were added. Ensure that data is proper.");
+            } catch (SQLException rollbackEx) {
+                Info.setText("Error during rollback. Contact support.");
+                rollbackEx.printStackTrace(); // For debugging
+            }
             Info.setText("Something went wrong, ensure that data is proper");
+        }finally {
+            // Re-enable auto-commit mode
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace(); // For debugging
+            }
         }
     }
 
     //edits record of meal
-    public void EditChosenMealB(ActionEvent actionEvent) {
 
+    public void SearchEditChosenMealB(ActionEvent actionEvent) {
+        try
+        {
+            ArrayList<Ingredient> mealToEdit = QueryOperations.SearchForMealToEdit(nameOfEditedMeal.getText(),connection);
+            FillEditedMealTextfields(mealToEdit);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public void FillEditedMealTextfields(ArrayList<Ingredient> meal) {
+        categoryOfEditedMeal.setText(meal.get(0).getMealCategory());
+        TextField[] productsTable = {mealEditProductOne,
+                mealEditProductTwo,
+                mealEditProductThree,
+                mealEditProductFour,
+                mealEditProductFive};
+        TextField[] weightTable = {mealEditWeightProductOne,
+                mealEditWeightProductTwo,
+                mealEditWeightProductThree,
+                mealEditWeightProductFour,
+                mealEditWeightProductFive};
+
+
+        for(int i =0;i<meal.size();i++)
+        {
+            productsTable[i].setText(meal.get(i).getProductName());
+            weightTable[i].setText(String.valueOf(meal.get(i).getProductWeight()));
+        }
+    }
+
+    public void EditChosenMealB(ActionEvent actionEvent) {
+        TextField[] productsTable = {mealEditProductOne,
+                mealEditProductTwo,
+                mealEditProductThree,
+                mealEditProductFour,
+                mealEditProductFive};
+        TextField[] weightTable = {mealEditWeightProductOne,
+                mealEditWeightProductTwo,
+                mealEditWeightProductThree,
+                mealEditWeightProductFour,
+                mealEditWeightProductFive};
+
+        for(int i=0;i<5;i++)
+        {
+            if(productsTable[i].getText()!=null || !productsTable[i].getText().isEmpty())
+            {
+                if(weightTable[i].getText().isEmpty())
+                {
+                    QueryOperations.EditMeal(nameOfEditedMeal.getText(),productsTable[i].getText(),0,connection);
+                }
+                else
+                {
+                QueryOperations.EditMeal(nameOfEditedMeal.getText(),productsTable[i].getText(),Integer.parseInt(weightTable[i].getText()),connection);
+                }
+                Info.setText("Edited meal " + nameOfEditedMeal.getText());
+            }
+        }
+    }
     //deletes chosen meal
     public void DeleteChosenMealB(ActionEvent actionEvent) throws SQLException {
         try {
@@ -335,7 +426,5 @@ public class Controller {
     }
 
 
-    public void SearchEditChosenMealB(ActionEvent actionEvent) {
 
-    }
 }
