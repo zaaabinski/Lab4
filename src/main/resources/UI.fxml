@@ -214,9 +214,9 @@
                </font>
             </Label>
             <TextField fx:id="nameOfNewMeal" layoutX="34.0" layoutY="84.0" />
+            <TextField fx:id="categoryOfNewMeal" layoutX="223.0" layoutY="84.0" />
             <TextField fx:id="nameOfProductForMealOne" layoutX="34.0" layoutY="146.0" />
             <TextField fx:id="weightOfMealOne" layoutX="223.0" layoutY="146.0" />
-            <TextField fx:id="categoryOfNewMeal" layoutX="223.0" layoutY="84.0" />
             <Label layoutX="34.0" layoutY="63.0" prefHeight="21.0" prefWidth="59.0" text="Name:">
                <font>
                   <Font size="15.0" />

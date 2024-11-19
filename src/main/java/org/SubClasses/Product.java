@@ -15,30 +15,27 @@ public class Product {
         this.category = category;
     }
 
-    public String getProductName() {
-        return productName;
-    }
     public int getCarbs() {
         return carbs;
     }
+
     public int getProtein() {
         return protein;
     }
+
     public int getFats() {
         return fats;
     }
+
     public String getCategory() {
         return category;
     }
 
-    public static int CaluclateCalories(int carbs,int protein,int fats)
-    {
-         int carbsCalories=4;
-        int proteinCalories =4;
-        int fatsCalories=9;
+    public static int CaluclateCalories(int carbs, int protein, int fats) {
+        int carbsCalories = 4;
+        int proteinCalories = 4;
+        int fatsCalories = 9;
 
-        return carbs*carbsCalories+proteinCalories*protein+fatsCalories*fats;
-
+        return carbs * carbsCalories + proteinCalories * protein + fatsCalories * fats;
     }
-
 }

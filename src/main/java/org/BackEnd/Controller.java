@@ -151,7 +151,7 @@ public class Controller {
     private TextField nameOfMealToDelete;
 
     @FXML
-    private TextField Info;
+    private  TextField Info;
     @FXML
     private TextArea productBaseShowTextArea;
     @FXML
@@ -181,35 +181,30 @@ public class Controller {
     @FXML
     private void ShowAddProductP() {
         // Action to show Add Product Pane
-        System.out.println("Show Add Product Pane clicked!");
         ShowPane(AddProductPane);
     }
 
     @FXML
     private void ShowEditProductP() {
         // Action to show Edit Product Pane
-        System.out.println("Show Edit Product Pane clicked!");
         ShowPane(EditProductPane);
     }
 
     @FXML
     private void ShowDeleteProductP() {
         // Action to show Delete Product Pane
-        System.out.println("Show Delete Product Pane clicked!");
         ShowPane(DeleteProductPane);
     }
 
     @FXML
     private void ShowProductMenu() {
         // Action to show the Product Menu Pane
-        System.out.println("Show Product Menu clicked!");
         ShowPane(ProductPane);
     }
 
     @FXML
     private void handleHomeButton() {
         // Handle the Home button click event
-        System.out.println("Home button clicked!");
         ShowPane(ButtonsMenu);
         // Hide all other panes and show the main menu if needed
     }
@@ -238,7 +233,6 @@ public class Controller {
         } catch (Exception e) {
             // Handle exceptions and provide user feedback
             mealBaseShowTextArea.setText("An error occurred while fetching meal data. Please try again.");
-            e.printStackTrace();
         }
     }
 
@@ -259,15 +253,18 @@ public class Controller {
     }
 
     //adds product to db
-    public void AddChosenProductB(ActionEvent actionEvent) throws SQLException {
+    public void AddChosenProductB(ActionEvent actionEvent) {
         try {
             QueryOperations.AddProductToBase(nameOfNewProduct.getText(), Integer.parseInt(carbsOfNewProduct.getText()), Integer.parseInt(proteinOfNewProduct.getText()), Integer.parseInt(fatsOfNewProduct.getText()), categoryOfNewProduct.getText(), connection);
-            System.out.println("InfoLabel: " + Info);
 
             Info.setText("Added product " + nameOfNewProduct.getText());
-        } catch (SQLException e) {
+            nameOfNewProduct.setText("");
+            carbsOfNewProduct.setText("");
+            proteinOfNewProduct.setText("");
+            fatsOfNewProduct.setText("");
+            categoryOfNewProduct.setText("");
+        } catch (Exception e) {
             Info.setText("Something went wrong, ensure that data is proper");
-            throw new RuntimeException(e);
         }
     }
 
@@ -277,8 +274,8 @@ public class Controller {
         {
             Product productToEdit = QueryOperations.SearchForProductToEdit(nameOfEditedProduct.getText(),connection);
             FillEditedProductTextfields(productToEdit);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            Info.setText("Something went wrong, can't find given product");
         }
     }
 
@@ -293,9 +290,13 @@ public class Controller {
         try {
             QueryOperations.EditProduct(nameOfEditedProduct.getText(), Integer.parseInt(editedValueCarbs.getText()), Integer.parseInt(editedValueProtein.getText()), Integer.parseInt(editedValueFats.getText()), editedValueCategory.getText(), connection);
             Info.setText("Edited product " + nameOfEditedProduct.getText());
+            nameOfEditedProduct.setText("");
+            editedValueCategory.setText("");
+            editedValueFats.setText("");
+            editedValueCarbs.setText("");
+            editedValueProtein.setText("");
         } catch (SQLException e) {
-            Info.setText("Something went wrong, ensure that data is proper");
-            throw new RuntimeException(e);
+            Info.setText("Something went wrong when editing product, check data");
         }
     }
 
@@ -304,8 +305,9 @@ public class Controller {
         try {
             QueryOperations.DeleteProduct(nameOfProductToDelete.getText(), connection);
             Info.setText("Deleted product " + nameOfProductToDelete.getText());
-        } catch (SQLException e) {
-            Info.setText("Something went wrong, ensure that data is proper");
+            nameOfProductToDelete.setText("");
+        } catch (Exception e) {
+            Info.setText("Something went wrong when deleting product, check data");
         }
     }
 
@@ -328,14 +330,14 @@ public class Controller {
             connection.setAutoCommit(false);
             QueryOperations.AddMealToBase(Meal, connection);
             for (TextField t : allNames) {
-                t.setText(null);
+                t.setText("");
             }
             for (TextField t : allWeights) {
-                t.setText(null);
+                t.setText("");
             }
             Info.setText("Added meal " + nameOfNewMeal.getText());
-            nameOfNewMeal.setText(null);
-            categoryOfNewMeal.setText(null);
+            nameOfNewMeal.setText("");
+            categoryOfNewMeal.setText("");
             connection.commit();
 
         } catch (SQLException e) {
@@ -343,8 +345,7 @@ public class Controller {
                 connection.rollback();
                 Info.setText("Something went wrong. No records were added. Ensure that data is proper.");
             } catch (SQLException rollbackEx) {
-                Info.setText("Error during rollback. Contact support.");
-                rollbackEx.printStackTrace(); // For debugging
+                Info.setText("Error during rollback");
             }
             Info.setText("Something went wrong, ensure that data is proper");
         }finally {
@@ -352,20 +353,20 @@ public class Controller {
             try {
                 connection.setAutoCommit(true);
             } catch (SQLException ex) {
-                ex.printStackTrace(); // For debugging
+                Info.setText("Something went wrong, ensure that data is proper");
+
             }
         }
     }
 
     //edits record of meal
-
     public void SearchEditChosenMealB(ActionEvent actionEvent) {
         try
         {
             ArrayList<Ingredient> mealToEdit = QueryOperations.SearchForMealToEdit(nameOfEditedMeal.getText(),connection);
             FillEditedMealTextfields(mealToEdit);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Info.setText("Something went wrong when searching for meal to edit ensure that data is proper");
         }
     }
 
@@ -391,31 +392,38 @@ public class Controller {
     }
 
     public void EditChosenMealB(ActionEvent actionEvent) {
-        TextField[] productsTable = {mealEditProductOne,
-                mealEditProductTwo,
-                mealEditProductThree,
-                mealEditProductFour,
-                mealEditProductFive};
-        TextField[] weightTable = {mealEditWeightProductOne,
-                mealEditWeightProductTwo,
-                mealEditWeightProductThree,
-                mealEditWeightProductFour,
-                mealEditWeightProductFive};
+        try {
+            TextField[] productsTable = {mealEditProductOne,
+                    mealEditProductTwo,
+                    mealEditProductThree,
+                    mealEditProductFour,
+                    mealEditProductFive};
+            TextField[] weightTable = {mealEditWeightProductOne,
+                    mealEditWeightProductTwo,
+                    mealEditWeightProductThree,
+                    mealEditWeightProductFour,
+                    mealEditWeightProductFive};
 
-        for(int i=0;i<5;i++)
-        {
-            if(productsTable[i].getText()!=null || !productsTable[i].getText().isEmpty())
-            {
-                if(weightTable[i].getText().isEmpty())
-                {
-                    QueryOperations.EditMeal(nameOfEditedMeal.getText(),productsTable[i].getText(),0,connection);
+            for (int i = 0; i < 5; i++) {
+                if (productsTable[i].getText() != null || !productsTable[i].getText().isEmpty()) {
+                    if (weightTable[i].getText().isEmpty()) {
+                        QueryOperations.EditMeal(nameOfEditedMeal.getText(), productsTable[i].getText(), 0, connection);
+                    } else {
+                        QueryOperations.EditMeal(nameOfEditedMeal.getText(), productsTable[i].getText(), Integer.parseInt(weightTable[i].getText()), connection);
+                    }
+                    Info.setText("Edited meal " + nameOfEditedMeal.getText());
                 }
-                else
-                {
-                QueryOperations.EditMeal(nameOfEditedMeal.getText(),productsTable[i].getText(),Integer.parseInt(weightTable[i].getText()),connection);
-                }
-                Info.setText("Edited meal " + nameOfEditedMeal.getText());
             }
+            for (TextField t : productsTable) {
+                t.setText("");
+            }
+            for (TextField t : weightTable) {
+                t.setText("");
+            }
+            nameOfEditedMeal.setText("");
+            categoryOfEditedMeal.setText("");
+        } catch (Exception e) {
+            Info.setText("Couldn't edit meal, ensure that data is proper");
         }
     }
     //deletes chosen meal
@@ -423,12 +431,13 @@ public class Controller {
         try {
             QueryOperations.DeleteMeal(nameOfMealToDelete.getText(), connection);
             Info.setText("Deleted Meal " + nameOfMealToDelete.getText());
-        } catch (SQLException e) {
-            Info.setText("Something went wrong, ensure that data is proper");
+            nameOfMealToDelete.setText("");
+        } catch (Exception e) {
+            Info.setText("Something went wrong when deleting meal ensure that data is proper");
         }
     }
 
-
+    //pdf generating
     public void GeneratePDFButton(ActionEvent actionEvent) {
         GenerateIngredientsPDF(connection,"C:\\\\Users\\\\jakmi\\\\Desktop\\\\output.pdf");
     }
@@ -442,8 +451,20 @@ public class Controller {
             PDFGenerator.GeneratePDF(summary, pdfFilePath);
             Info.setText("PDF generated successfully at " + pdfFilePath);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error during PDF generation.");
+            Info.setText("Something went wrong when greeting PDF, check data");
         }
+    }
+
+    public void SetInfoText(String txt)
+    {
+        Info.setText(txt);
+    }
+    private static Controller instance;
+    public Controller() {
+        instance = this; // Set the static reference in the constructor
+    }
+
+    public static Controller getInstance() {
+        return instance; // Provide access to the instance
     }
 }

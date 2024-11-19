@@ -18,7 +18,7 @@ public class ApplicationStart extends Application {
     public void start(Stage primaryStage) throws IOException {
 
         Parent root = FXMLLoader.load(getClass().getResource("/UI.fxml"));
-        primaryStage.setTitle("Front End");
+        primaryStage.setTitle("Diet builder");
         primaryStage.setScene(new Scene(root, 700,500));
         primaryStage.show();
      }
