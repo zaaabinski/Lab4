@@ -3,7 +3,7 @@ package org.MiddlEnd;
 import org.BackEnd.DatabaseConnection;
 import org.BackEnd.QueryOperations;
 import org.UI.ApplicationStart;
-import org.BackEnd.Controller;
+import org.UI.Controller;
 
 import java.sql.SQLException;
 

@@ -1,4 +1,4 @@
-package org.BackEnd;
+package org.UI;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,6 +7,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.BackEnd.PDFGenerator;
+import org.BackEnd.QueryOperations;
 import org.SubClasses.Ingredient;
 import org.SubClasses.Product;
 

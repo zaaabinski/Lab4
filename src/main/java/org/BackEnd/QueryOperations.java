@@ -2,6 +2,7 @@ package org.BackEnd;
 
 import org.SubClasses.Ingredient;
 import org.SubClasses.Product;
+import org.UI.Controller;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -107,14 +108,15 @@ public class QueryOperations {
 
     public static void EditProduct(String foodName, int carbs, int protein, int fats, String category, Connection connection) throws SQLException {
         try {
-            String updateProductQuery = "UPDATE PRODUCTS SET carbs = ?, protein = ?, fats = ?, category = ? WHERE productName = ?";
+            String updateProductQuery = "UPDATE PRODUCTS SET carbs = ?, protein = ?, fats = ?, category = ?, calories = ? WHERE productName = ?";
 
             PreparedStatement statement = connection.prepareStatement(updateProductQuery);
             statement.setInt(1, carbs);
             statement.setInt(2, protein);
             statement.setInt(3, fats);
             statement.setString(4, category);
-            statement.setString(5, foodName);
+            statement.setString(6, foodName);
+            statement.setInt(5,Product.CaluclateCalories(carbs,protein,fats));
             statement.executeUpdate();
         } catch (Exception e) {
             Controller.getInstance().SetInfoText("Can't edit product, check data");
