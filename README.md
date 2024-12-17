@@ -1,4 +1,4 @@
-Lab4 (nazwane demo1)
+Lab4 
 Celem projektu jest stworzenie aplikacji typu Diet Builder posiadających następujące funkcjonalności:
 
 użytkownik może dodawać, edytować i usuwać pojedyncze produkty definiując ich metadane, np.
