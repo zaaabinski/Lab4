@@ -1,6 +1,10 @@
-Lab4 
-Celem projektu jest stworzenie aplikacji typu Diet Builder posiadających następujące funkcjonalności:
+## Lab4 JP
+Zaprojektowanie i implementacja aplikacji z wykorzystaniem kontenerów danych (tablice, kolekcje) oraz szablonów (generics).
 
+## Cel zajęć
+
+
+Celem projektu jest stworzenie aplikacji typu Diet Builder posiadających następujące funkcjonalności:
 użytkownik może dodawać, edytować i usuwać pojedyncze produkty definiując ich metadane, np.
 Banan (100g):
 - Węglowodany (g): 23,
